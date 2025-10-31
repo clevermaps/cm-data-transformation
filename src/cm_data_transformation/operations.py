@@ -43,7 +43,7 @@ class Operations:
 
     def run_template_sql(self, template_name: str, **params):
         sql = self.render_template(template_name, **params)
-        print(sql)
+        #print(sql)
         self.sql_execute(sql)
 
     def buffer(self, in_table, geom_col, buffer_m, out_col, out_table):
@@ -124,8 +124,8 @@ class Operations:
         self._run_scenario(scenario)
 
     def _run_scenario(self, scenario: dict):
-        print(f"Running scenario...")
         for step in scenario["steps"]:
+            print(f"Running scenario step {step} ...")
             name = step["name"]
             func_name = step["function"]
             params = step["params"]
@@ -136,5 +136,3 @@ class Operations:
                 raise ValueError(f"Unknown function: {func_name}")
 
             func(**params)
-
-        print("Scenario finished.")
