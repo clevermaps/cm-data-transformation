@@ -19,7 +19,8 @@ class Operations:
             "grid": self.grid,
             "nearest": self.nearest,
             "join": self.join,
-            "custom": self.custom,
+            "custom_sql": self.custom_sql,
+            "custom_sql_file": self.custom_sql_file,
         }
 
     def _initialize(self):
@@ -112,9 +113,16 @@ class Operations:
             out_table=out_table,
         )
 
-    def custom(self, sql: str):
+    def custom_sql(self, sql: str):
         self.sql_execute(sql)
 
+    def custom_sql_file(self, sql_file_path: str):
+        file_path = Path(sql_file_path)
+        if not file_path.is_file():
+            raise FileNotFoundError(f"SQL file not found: {sql_file_path}")
+        with open(file_path, "r") as f:
+            sql = f.read()
+        self.sql_execute(sql)
     def run_scenario_yaml(self, yaml_path: Path):
         with open(yaml_path, "r") as f:
             scenario = yaml.safe_load(f)
