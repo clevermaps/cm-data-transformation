@@ -115,12 +115,16 @@ class Operations:
     def custom(self, sql: str):
         self.sql_execute(sql)
 
-    def run_yaml_scenario(self, yaml_path: Path):
-        
+    def run_scenario_yaml(self, yaml_path: Path):
         with open(yaml_path, "r") as f:
             scenario = yaml.safe_load(f)
+        self._run_scenario(scenario)
 
-        print(f"Running scenario: {scenario['scenario']}")
+    def run_scenario_dict(self, scenario: dict):
+        self._run_scenario(scenario)
+
+    def _run_scenario(self, scenario: dict):
+        print(f"Running scenario...")
         for step in scenario["steps"]:
             name = step["name"]
             func_name = step["function"]
