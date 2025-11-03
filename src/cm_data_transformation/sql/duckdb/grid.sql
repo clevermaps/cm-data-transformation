@@ -1,5 +1,9 @@
-create or replace table {{ out_table }} as
-select
+CREATE OR REPLACE TABLE {{ to.table }} AS
+SELECT
     *,
-    h3_latlng_to_cell_string(st_y({{ geom_col }}), st_x({{ geom_col }}), 6) as h3_r{{ h3_res }}_id
-from {{ in_table }}
+    h3_latlng_to_cell_string(
+        ST_Y({{ from.options.geometry }}),
+        ST_X({{ from.options.geometry }}),
+        {{ func.options.h3_res }}
+    ) AS h3_r{{ func.options.h3_res }}_id
+FROM {{ from.table }}

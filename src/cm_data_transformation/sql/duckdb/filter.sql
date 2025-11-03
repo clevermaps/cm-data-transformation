@@ -1,7 +1,9 @@
-create or replace table {{ out_table }} as
-select
+CREATE OR REPLACE TABLE {{ to.table }} AS
+SELECT
     a.*
-from {{ in_table_a }} a
-join {{ in_table_b }} b
-on ST_Intersects(a.{{ geom_col_a }}, b.{{ geom_col_b }})
-and {{ where_condition }}
+FROM {{ from.table }} AS a
+JOIN {{ with.table }} AS b
+ON ST_Intersects(a.{{ from.options.geometry }}, b.{{ with.options.geometry }})
+{% if func.options.where is defined %}
+AND {{ func.options.where }}
+{% endif %}

@@ -1,9 +1,8 @@
-create or replace table {{ out_table }} as
-select
+CREATE OR REPLACE TABLE {{ to.table }} AS
+SELECT
     a.*,
-    {{ agg_func }}
-from {{ in_table_a }} as a
-left join {{ in_table_b }} as b
-on ST_Intersects( a.{{ geom_col_a }}, b.{{ geom_col_b }} )
-group by
-    a.*
+    {{ func.options.agg }}
+FROM {{ from.table }} AS a
+LEFT JOIN {{ with.table }} AS b
+ON ST_Intersects(a.{{ from.options.geometry }}, b.{{ with.options.geometry }})
+GROUP BY a.*

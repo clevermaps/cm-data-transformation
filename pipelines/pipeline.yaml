@@ -1,0 +1,95 @@
+pipeline:
+
+  - step:
+      from: 
+        table: stg.gtfs__stops
+        options:
+          geometry: geom
+      function:
+        type: buffer
+        options:
+          size: 300
+          column: buffer_geom
+      to:
+        table: stg.gtfs__stops_buffer_300
+
+  - step:
+      from:
+        table: stg.gtfs__stops_buffer_300
+        options: 
+          geometry: buffer_geom
+      with:
+        table: stg.geoboundaries__adm3
+        options:
+          geometry: geom
+      function:
+        type: filter
+        options:
+          where: "shape_name = 'Brno'"
+      to:
+        table: stg.gtfs__stops_brno
+
+  - step:
+      from:
+        table: stg.worldpop__population
+        options: 
+          geometry: geom
+      with:
+        table: stg.gtfs__stops_buffer_300
+        options:
+          geometry: buffer_geom
+      function:
+        type: aggregate
+        options: 
+          agg: "SUM(pop) AS total_pop"
+      to:
+        table: stg.stops_pop_300
+
+  - step:
+      from:
+        table: stg.gtfs__stops
+        options: 
+          geometry: geom
+      function:
+        type: grid
+        options:
+          h3_res: 6
+      to:
+        table: stg.gtfs__stops_grid
+
+  - step:
+      from:
+        table: stg.gtfs__stops
+        options: 
+          geometry: geom
+          id: stop_id
+      with:
+        table: stg.ovm__places
+        options:
+          geometry: geom
+          id: id
+      function:
+        type: nearest
+        options:
+          max_distance: 2000
+      to:
+        table: stg.gtfs__stops_places_nearest
+
+  - step:
+      from:
+        table: stg.gtfs__stops
+        options: 
+          geometry: geom
+          columns:
+            - "stop_id"
+      with:
+        table: stg.geoboundaries__adm3
+        options:
+          geometry: geom
+          columns:
+            - "shape_name AS adm_name"
+      function:
+        type: join
+        options: {}
+      to:
+        table: stg.gtfs__stops_adm3

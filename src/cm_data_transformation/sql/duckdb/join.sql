@@ -1,13 +1,13 @@
-create or replace table {{ out_table }} as
-select
+CREATE OR REPLACE TABLE {{ to.table }} AS
+SELECT
     {%- set all_cols = [] %}
 
     {#-- a_columns --#}
-    {%- if a_columns %}
-        {%- if a_columns[0] == '*' %}
+    {%- if func.options.a_columns %}
+        {%- if func.options.a_columns[0] == '*' %}
             {%- set _ = all_cols.append('a.*') %}
         {%- else %}
-            {%- for col in a_columns %}
+            {%- for col in func.options.a_columns %}
                 {%- set _ = all_cols.append('a.' ~ col) %}
             {%- endfor %}
         {%- endif %}
@@ -16,8 +16,8 @@ select
     {%- endif %}
 
     {#-- b_columns --#}
-    {%- if b_columns %}
-        {%- for col in b_columns %}
+    {%- if func.options.b_columns %}
+        {%- for col in func.options.b_columns %}
             {%- for k, v in col.items() %}
                 {%- set _ = all_cols.append('b.' ~ k ~ ' AS ' ~ v) %}
             {%- endfor %}
@@ -26,6 +26,6 @@ select
 
     {{ all_cols | join(', ') }}
 
-from {{ in_table_a }} as a
-left join {{ in_table_b }} as b
-on ST_Intersects(a.{{ geom_col_a }}, b.{{ geom_col_b }})
+FROM {{ from.table }} AS a
+LEFT JOIN {{ with.table }} AS b
+ON ST_Intersects(a.{{ from.options.geometry }}, b.{{ with.options.geometry }})

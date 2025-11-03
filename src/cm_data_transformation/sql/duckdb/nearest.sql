@@ -1,28 +1,27 @@
 -- TODO optimize
+CREATE OR REPLACE TABLE {{ to.table }} AS
 
-create or replace table {{ out_table }} as
-
-with pairs AS (
+WITH pairs AS (
     SELECT
         a.*,
-        b.{{ id_col_b }} AS pair_id,
-        st_distance(
-            st_transform(a.{{ geom_col_a }}, 'EPSG:4326', 'EPSG:3857'),
-            st_transform(b.{{ geom_col_b }}, 'EPSG:4326', 'EPSG:3857')
+        b.{{ with.options.id }} AS pair_id,
+        ST_Distance(
+            ST_Transform(a.{{ from.options.geometry }}, 'EPSG:4326', 'EPSG:3857'),
+            ST_Transform(b.{{ with.options.geometry }}, 'EPSG:4326', 'EPSG:3857')
         ) AS pair_distance
-    FROM {{ in_table_a }} as a
-    LEFT JOIN {{ in_table_b }} as b
+    FROM {{ from.table }} AS a
+    LEFT JOIN {{ with.table }} AS b
     ON (
-        st_intersects(
-            st_transform(
-                st_buffer(
-                    st_transform(a.{{ geom_col_a }}, 'EPSG:4326', 'EPSG:3857'),
-                    {{ max_distance }}
+        ST_Intersects(
+            ST_Transform(
+                ST_Buffer(
+                    ST_Transform(a.{{ from.options.geometry }}, 'EPSG:4326', 'EPSG:3857'),
+                    {{ func.options.max_distance }}
                 ),
                 'EPSG:3857',
                 'EPSG:4326'
             ),
-            b.{{ geom_col_b }}
+            b.{{ with.options.geometry }}
         )
     )
 )
@@ -31,13 +30,10 @@ SELECT
 FROM (
     SELECT
         *,
-        row_number() OVER (
-            PARTITION BY {{ id_col_a }}
+        ROW_NUMBER() OVER (
+            PARTITION BY {{ from.options.id }}
             ORDER BY pair_distance
         ) AS rn
     FROM pairs
 ) ranked
-
 WHERE rn = 1
-
-
