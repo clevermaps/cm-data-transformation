@@ -23,14 +23,13 @@ class Runner:
             scenario = yaml.safe_load(f)
         self._run_pipeline(scenario.get("pipeline", []))
 
-    def run_dict(self, scenario_dict: dict):
+    def run_dict(self, steps: list):
         """Spustí pipeline přímo ze slovníku (už načteného YAML)."""
-        if not isinstance(scenario_dict, dict):
-            raise ValueError("run_dict očekává Python dict")
-        self._run_pipeline(scenario_dict.get("pipeline", []))
+        
+        self._run_pipeline(steps)
 
-    def _run_pipeline(self, pipeline: list):
-        for idx, step_dict in enumerate(pipeline):
+    def _run_pipeline(self, steps: list):
+        for idx, step_dict in enumerate(steps):
             step = step_dict["step"]
             func_cfg = step["function"]
             func_type = func_cfg["type"]
