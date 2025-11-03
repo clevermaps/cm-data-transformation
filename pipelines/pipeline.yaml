@@ -93,3 +93,16 @@ pipeline:
         options: {}
       to:
         table: stg.gtfs__stops_adm3
+  
+  - step:
+      function:
+        type: custom_sql_file
+        options:
+          sql_file_path: ./sql/custom.sql
+
+  - step:
+      function:
+        type: custom_sql
+        options:
+          sql: |
+            select count(1) from stg.gtfs__stops_adm3

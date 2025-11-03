@@ -22,7 +22,8 @@ dependencies = [
     "jinja2",
     "pyyaml",
     "sqlalchemy",
-    "duckdb-engine"
+    "duckdb-engine",
+    "pydantic"
 ]
 
 [tool.setuptools.packages.find]
