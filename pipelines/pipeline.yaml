@@ -1,12 +1,31 @@
 pipeline:
 
+
+  - step:
+      from: 
+        table: stg.gtfs__stops
+        options:
+          geometry: geom
+      with:
+        table: stg.ovm__places
+        options:
+          geometry: geom
+          id: id
+      function:
+        type: aggregate_within_buffer
+        options:
+          buffer_size: 300
+          agg: "count(id) AS poi_count"
+      to:
+        table: stg.gtfs__stops_agg_buffer
+
   - step:
       from: 
         table: stg.gtfs__stops
         options:
           geometry: geom
       function:
-        type: buffer
+        type: generate_buffer
         options:
           size: 300
           column: buffer_geom
@@ -23,7 +42,7 @@ pipeline:
         options:
           geometry: geom
       function:
-        type: filter
+        type: filter_by_overlap
         options:
           where: "shape_name = 'Brno'"
       to:
@@ -39,7 +58,7 @@ pipeline:
         options:
           geometry: buffer_geom
       function:
-        type: aggregate
+        type: aggregate_by_region
         options: 
           agg: "SUM(pop) AS total_pop"
       to:
@@ -51,7 +70,7 @@ pipeline:
         options: 
           geometry: geom
       function:
-        type: grid
+        type: generate_grid_h3
         options:
           h3_res: 6
       to:
@@ -69,9 +88,10 @@ pipeline:
           geometry: geom
           id: id
       function:
-        type: nearest
+        type: find_nearest_neighbors
         options:
           max_distance: 2000
+          max_neighbours: 3
       to:
         table: stg.gtfs__stops_places_nearest
 
@@ -89,7 +109,7 @@ pipeline:
           columns:
             - "shape_name AS adm_name"
       function:
-        type: join
+        type: enrich_by_overlap
         options: {}
       to:
         table: stg.gtfs__stops_adm3

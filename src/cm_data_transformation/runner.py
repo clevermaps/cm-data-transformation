@@ -21,8 +21,8 @@ class Runner:
         self.operations = Operations(connection_string)
         self.FUNCTIONS = self.operations.FUNCTIONS
 
+        # zatim neni doladene
         self.validate = validate
-
         self.validator = StepValidator(
             sql_dir=Path(__file__).parent / "sql" / "duckdb",
             sql_mapping={
@@ -39,7 +39,7 @@ class Runner:
     def run_yaml(self, yaml_path: Path):
         with open(yaml_path, "r") as f:
             config = yaml.safe_load(f)
-        self._run_pipeline(config.get("pipeline", []))
+        self._run_pipeline(config.get("steps", []))
 
     def run_steps(self, steps: list):
         """Spustí pipeline přímo ze slovníku (už načteného YAML)."""
@@ -91,4 +91,4 @@ class Runner:
                 print(f"Step {idx+1}: Running {func_type} → {out_table}")
                 
                 # předáme celý dict do Jinja template
-                func(**params_dict)
+                func(params_dict)

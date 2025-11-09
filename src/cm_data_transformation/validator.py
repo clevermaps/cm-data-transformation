@@ -6,6 +6,8 @@ from pathlib import Path
 import json
 
 
+# TODO Fix not working properly
+
 class FromConfig(BaseModel):
     table: str
     options: Optional[Dict[str, Any]] = None

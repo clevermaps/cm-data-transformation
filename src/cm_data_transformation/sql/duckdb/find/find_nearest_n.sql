@@ -3,14 +3,14 @@ CREATE OR REPLACE TABLE {{ to.table }} AS
 
 WITH pairs AS (
     SELECT
-        a.*,
-        b.{{ with.options.id }} AS pair_id,
+        {{ from.options.table_alias }}.*,
+        {{ with.options.table_alias }}.{{ with.options.id }} AS pair_id,
         ST_Distance(
             ST_Transform(a.{{ from.options.geometry }}, 'EPSG:4326', 'EPSG:3857'),
             ST_Transform(b.{{ with.options.geometry }}, 'EPSG:4326', 'EPSG:3857')
         ) AS pair_distance
-    FROM {{ from.table }} AS a
-    LEFT JOIN {{ with.table }} AS b
+    FROM {{ from.table }} AS {{ from.options.table_alias }}
+    LEFT JOIN {{ with.table }} AS {{ with.options.table_alias }}
     ON (
         ST_Intersects(
             ST_Transform(
@@ -24,6 +24,9 @@ WITH pairs AS (
             b.{{ with.options.geometry }}
         )
     )
+    {% if func.options.where_condition is defined %}
+        AND {{ func.options.where_condition }}
+    {% endif %}
 )
 SELECT
     *
@@ -36,4 +39,4 @@ FROM (
         ) AS rn
     FROM pairs
 ) ranked
-WHERE rn = 1
+WHERE rn <= {{ func.options.max_neighbours }}
