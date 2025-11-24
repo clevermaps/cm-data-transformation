@@ -1,148 +1,251 @@
-# 🗺️ Spatial SQL Functions Framework
+# 🗺️ Geospatial Data Transformation Framework
 
-Tento modul obsahuje sadu SQL funkcí pro prostorové analýzy a datové transformace.
-Cílem je zpřístupnit běžné **spatial analytické operace** v jednoduché, jednotné a
-uživatelsky srozumitelné formě – bez nutnosti hlubokých GIS znalostí.
+This module contains a set of high-level functions for geospatial
+analysis and data transformations. The goal is to make common **spatial
+analytical operations** accessible in a simple, unified, and
+user‑friendly form---without requiring deep GIS knowledge.
 
-Každá funkce je implementována jako samostatný `.sql` soubor a je zařazena
-do tematické podsložky podle typu operace.
+Key characteristics: \* Computational functions are implemented using
+Jinja SQL templates for various database systems. \* Functions leverage
+native capabilities of the target database systems to ensure performance
+and scalability. \* Everything is orchestrated by a Python layer
+responsible for executing tasks, handling parameters, and rendering
+final SQL queries. \* The framework can be easily integrated into the
+standard Python ecosystem. \* The framework is easily extensible---both
+with new functions and support for additional database systems.
 
----
+------------------------------------------------------------------------
 
-## 📁 Struktura adresářů
+# Design Principles
 
+1.  **Simplicity:**\
+    Each function solves a clearly defined task.\
+    Syntax and naming are designed to be understandable even for non‑GIS
+    analysts.
+
+2.  **Modularity:**\
+    Functions are organized by operation type so they can be easily
+    combined into simple data pipelines\
+    (e.g., `generate_buffer` → `aggregate_within_buffer` →
+    `enrich_by_overlap`).
+
+3.  **Consistency:**\
+    Function names match file names and include an action prefix
+    (`generate_`, `filter_by_`, ...).\
+    Arguments and column names follow consistent naming (`geom`, `id`,
+    `value`, `metric_*`).
+
+4.  **Compatibility:**\
+    Functions are written using SQL compatible with major spatial
+    engines (e.g., PostGIS, DuckDB, BigQuery).\
+    Where possible, standard geometry operators are used
+    (`ST_Intersects`, `ST_Distance`, `ST_Buffer`, etc.).
+
+------------------------------------------------------------------------
+
+# Quick Start
+
+Below is a minimal set of examples showing how to run spatial operations
+using this framework.\
+You can choose between **imperative Python API** or **declarative YAML
+pipelines**.
+
+Both approaches rely on the same SQL + Jinja templates and produce
+identical results.
+
+------------------------------------------------------------------------
+
+## Using Python
+
+``` python
+from cm_data_transformation.operations import Operations
+
+# 1. Initialize the operations engine
+ops = Operations("duckdb:///data/data.duckdb")
+
+# 2. Prepare parameters for the operation
+params = {
+    "from": {
+        "table": "gtfs_stg.stops"
+    },
+    "func": {
+        "name": "aggregate_within_buffer",
+        "options": {
+            "buffer_size": 500,
+            "agg": "count(id) AS poi_count"
+        }
+    },
+    "with": {
+        "table": "ovm_stg.places_place",
+        "options": {
+            "geometry": "geom",
+            "id": "id"
+        }
+    },
+    "to": {
+        "table": "app.stops_agg_buffer_poi"
+    }
+}
+
+# 3. Execute the operation
+ops.filter.filter_by_overlap(params)
 ```
-spatial/
-├── agg/         # Agregace prostorových dat
-├── enrich/      # Obohacování dat na základě prostorových vztahů
-├── filter/      # Filtrování dat podle prostorových vztahů
-├── find/        # Hledání sousedství a nejbližších objektů
-├── gen/         # Generování nových prostorových objektů
-├── analyze/     # (volitelné) Pokročilé analýzy a metriky
-└── utils/       # (volitelné) Pomocné a H3 utility funkce
+
+------------------------------------------------------------------------
+
+## Using YAML
+
+``` yaml
+- step:
+      title: "Count of POI around stops"
+      from: 
+        table: gtfs_stg.stops
+        options:
+          geometry: geom
+      with:
+        table: ovm_stg.places_place
+        options:
+          geometry: geom
+          id: id
+      function:
+        type: aggregate_within_buffer
+        options:
+          buffer_size: 500
+          agg: "count(id) AS poi_count"
+      to:
+        table: app.stops_agg_buffer_poi
 ```
 
----
+``` python
+from cm_data_transformation.runner import Runner
 
-## 🔹 Naming konvence
-
-Každý SQL soubor odpovídá jedné „funkci“ ve stylu:
-```
-<action>_<context>.sql
+runner = Runner("duckdb:///data/data.duckdb")
+runner.run_yaml("./pipelines/test.yaml")
 ```
 
-| Prefix (akce) | Význam |
-|----------------|--------|
-| `generate_` | vytváří novou geometrii nebo grid |
-| `filter_by_` | vybírá subset dat podle prostorového vztahu |
-| `find_` | hledá sousední nebo nejbližší prvky |
-| `enrich_by_` | přidává nové atributy na základě prostorového vztahu |
-| `aggregate_` | shrnuje nebo seskupuje data podle prostorových jednotek |
-| `compute_` | (v analyze/) vypočítává metriky nebo skóre |
-| `assign_` | (v utils/) přidává technické ID, např. H3 index |
+------------------------------------------------------------------------
 
----
+## What Happens Under the Hood
 
-## 🧩 Přehled existujících funkcí
+1.  You call a high-level operation (Python or YAML).
+2.  The framework loads the corresponding Jinja SQL template.
+3.  Parameters are injected to produce executable SQL.
+4.  The SQL is executed in your target database.
+
+
+------------------------------------------------------------------------
+
+# Functions
+
+    /
+    ├── agg/         # Spatial data aggregations
+    ├── enrich/      # Data enrichment based on spatial relationships
+    ├── filter/      # Filtering data by spatial relationships
+    ├── find/        # Finding neighbors and nearest features
+    ├── gen/         # Generating new spatial objects
+    ├── analyze/     # Advanced analyses and metrics
+    └── utils/       # Helper functions
+
+------------------------------------------------------------------------
+
+## Naming Conventions
+
+Each function solves one specific task in the form:
+
+    <action>_<context>
+
+  -----------------------------------------------------------------------
+  Prefix (action)                                 Meaning
+  ----------------------------------------------- -----------------------
+  `generate_`                                     creates new geometry or
+                                                  grid
+
+  `filter_by_`                                    selects a subset of
+                                                  data based on spatial
+                                                  relationships
+
+  `find_`                                         finds neighboring or
+                                                  nearest features
+
+  `enrich_by_`                                    adds attributes based
+                                                  on spatial
+                                                  relationships
+
+  `aggregate_`                                    summarizes or groups
+                                                  data by spatial units
+
+  `compute_`                                      (in analyze/) computes
+                                                  metrics or scores
+                                                
+  -----------------------------------------------------------------------
+
+------------------------------------------------------------------------
+
+## Overview of Existing Functions
 
 ### **agg/**
-| Funkce | Popis |
-|---------|--------|
-| `aggregate_by_region.sql` | Agreguje hodnoty vrstvy B podle polygonů vrstvy A (např. regionů). |
-| `aggregate_within_buffer.sql` | Agreguje hodnoty z okolí (bufferu) kolem bodů nebo polygonů. |
+
+  ------------------------------------------------------------------------
+  Function                        Description
+  ------------------------------- ----------------------------------------
+  `aggregate_by_region`           Aggregates values of layer B within
+                                  polygons of layer A (e.g., regions).
+
+  `aggregate_within_buffer`       Aggregates values within a buffer around
+                                  points or polygons.
+
+  ------------------------------------------------------------------------
 
 ### **enrich/**
-| Funkce | Popis |
-|---------|--------|
-| `enrich_by_overlap.sql` | Přidá do tabulky A atributy z tabulky B podle prostorového průniku. |
+
+  -----------------------------------------------------------------------
+  Function                       Description
+  ------------------------------ ----------------------------------------
+  `enrich_by_overlap`            Adds attributes from layer B to layer A
+                                 based on spatial overlap.
+
+  -----------------------------------------------------------------------
 
 ### **filter/**
-| Funkce | Popis |
-|---------|--------|
-| `filter_by_overlap.sql` | Vybere jen prvky A, které se prostorově překrývají s vrstvou B. |
+
+  -----------------------------------------------------------------------
+  Function                       Description
+  ------------------------------ ----------------------------------------
+  `filter_by_overlap`            Selects only elements of A that
+                                 spatially overlap with layer B.
+
+  -----------------------------------------------------------------------
 
 ### **find/**
-| Funkce | Popis |
-|---------|--------|
-| `find_nearest_neighbors.sql` | Najde nejbližší objekty z vrstvy B ke každému prvku vrstvy A. |
-| `find_nearest_neighbors_avg.sql` | Stejné jako výše, ale s průměrováním metrik více sousedů. |
+
+  ---------------------------------------------------------------------------
+  Function                           Description
+  ---------------------------------- ----------------------------------------
+  `find_nearest_neighbors`           Finds the nearest objects from layer B
+                                     for each element of layer A.
+
+  `find_nearest_neighbors_avg`       Same as above, but with averaging across
+                                     multiple neighbors.
+                                     
+  ---------------------------------------------------------------------------
 
 ### **gen/**
-| Funkce | Popis |
-|---------|--------|
-| `generate_buffer.sql` | Vytvoří buffer kolem bodů nebo polygonů. |
-| `generate_grid_h3.sql` | Vygeneruje H3 grid podle zadané geometrie. |
-| `generate_grid_around_h3.sql` | Vygeneruje H3 buňky v okolí daného H3 indexu (k-ring). |
-| `generate_grid_within_h3.sql` | Vygeneruje H3 buňky pokrývající zadaný polygon. |
 
----
+  ------------------------------------------------------------------------
+  Function                        Description
+  ------------------------------- ----------------------------------------
+  `generate_buffer`               Creates a buffer around points or
+                                  polygons.
 
-## ⚙️ Doporučené budoucí rozšíření
+  `generate_grid_h3`              Generates an H3 grid for a given
+                                  geometry.
 
-### **analyze/**
-Funkce pro výpočet metrik a pokročilých prostorových analýz:
-- `compute_coverage_ratio.sql` — podíl plochy pokrytí mezi vrstvami  
-- `compute_density.sql` — prostorová hustota bodů nebo událostí  
-- `compute_accessibility_score.sql` — skóre dostupnosti dle více faktorů  
-- `compare_spatial_layers.sql` — porovnání dvou prostorových vrstev  
+  `generate_grid_around_h3`       Generates H3 cells around a given H3
+                                  index (k‑ring).
 
-### **utils/**
-Pomocné funkce, zejména pro práci s H3 gridem:
-- `assign_h3_index.sql` — přidání H3 indexu podle geometrie  
-- `h3_to_polygon.sql` — převod H3 ID na polygon  
-- `h3_to_parent.sql` — převod na hrubší úroveň H3 gridu  
-- `h3_to_children.sql` — rozpad na jemnější úroveň H3 gridu  
+  `generate_grid_within_h3`       Generates H3 cells covering a given
+                                  polygon.
+                                  
+  ------------------------------------------------------------------------
 
----
-
-## 🧠 Design principy
-
-1. **Jednoduchost:**  
-   Každá funkce řeší jednoznačně definovanou úlohu.  
-   Syntaxe i názvy jsou navržené tak, aby byly srozumitelné i ne-GIS analytikům.
-
-2. **Modularita:**  
-   Funkce jsou organizovány podle typu operace, aby bylo možné je snadno kombinovat
-   (např. `generate_buffer` → `aggregate_within_buffer` → `enrich_by_overlap`).
-
-3. **Konzistence:**  
-   Název funkce odpovídá názvu souboru a obsahuje prefix akce (`generate_`, `filter_by_`, …).  
-   Argumenty a názvy sloupců se drží jednotného pojmenování (`geom`, `id`, `value`, `metric_*`).
-
-4. **Kompatibilita:**  
-   Funkce jsou psány v SQL kompatibilním s běžnými spatial enginy (např. PostGIS, DuckDB, BigQuery GIS).  
-   Tam, kde je to možné, jsou použity standardní geometrické operátory (`ST_Intersects`, `ST_Distance`, `ST_Buffer` atd.).
-
----
-
-## 💡 Příklady kombinací funkcí
-
-```sql
--- Vyber parcely, které se protínají se silnicemi
-SELECT * FROM filter_by_overlap('parcely', 'silnice');
-
--- Agreguj počet POI v okolí zastávek MHD (100 m buffer)
-SELECT * FROM aggregate_within_buffer('zastavky', 'poi', 100);
-
--- Obohať regiony o počet obyvatel z vrstvy gridu
-SELECT * FROM enrich_by_overlap('regiony', 'population_grid');
-```
-
----
-
-## 📚 Další plány
-
-- Přidat podporu pro časové a grid-based funkce (H3, S2, isochrony)
-- Doplnit `analyze/` modul s metrikami dostupnosti, pokrytí a výkonu
-- Přidat `utils/` modul s převody mezi geometriemi, gridy a regiony
-- Vytvořit jednoduchý Python wrapper pro volání funkcí z dbt nebo SQL API
-
----
-
-## ✍️ Autorství
-
-Tento framework vzniká jako součást **Location Intelligence / Spatial Analytics** nástrojů
-a je určen pro analytiky, kteří chtějí používat prostorové funkce
-v běžných SQL workflowech bez složité GIS infrastruktury.
-
----
+------------------------------------------------------------------------
