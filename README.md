@@ -5,13 +5,18 @@ analysis and data transformations. The goal is to make common **spatial
 analytical operations** accessible in a simple, unified, and
 user‑friendly form---without requiring deep GIS knowledge.
 
-Key characteristics: \* Computational functions are implemented using
-Jinja SQL templates for various database systems. \* Functions leverage
+Key characteristics: 
+* Computational functions are implemented using
+Jinja SQL templates for various database systems. 
+* Functions leverage
 native capabilities of the target database systems to ensure performance
-and scalability. \* Everything is orchestrated by a Python layer
+and scalability. 
+* Everything is orchestrated by a Python layer
 responsible for executing tasks, handling parameters, and rendering
-final SQL queries. \* The framework can be easily integrated into the
-standard Python ecosystem. \* The framework is easily extensible---both
+final SQL queries. 
+* The framework can be easily integrated into the
+standard Python ecosystem. 
+* The framework is easily extensible---both
 with new functions and support for additional database systems.
 
 ------------------------------------------------------------------------
