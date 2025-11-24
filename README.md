@@ -16,7 +16,7 @@ responsible for executing tasks, handling parameters, and rendering
 final SQL queries. 
 * The framework can be easily integrated into the
 standard Python ecosystem. 
-* The framework is easily extensible---both
+* The framework is easily extensible - both
 with new functions and support for additional database systems.
 
 ------------------------------------------------------------------------
@@ -93,7 +93,7 @@ params = {
 }
 
 # 3. Execute the operation
-ops.filter.filter_by_overlap(params)
+ops.agg.aggregate_within_buffer(params)
 ```
 
 ------------------------------------------------------------------------
@@ -190,8 +190,6 @@ Each function solves one specific task in the form:
 
 ### **agg/**
 
-  ------------------------------------------------------------------------
-  Function                        Description
   ------------------------------- ----------------------------------------
   `aggregate_by_region`           Aggregates values of layer B within
                                   polygons of layer A (e.g., regions).
@@ -203,8 +201,6 @@ Each function solves one specific task in the form:
 
 ### **enrich/**
 
-  -----------------------------------------------------------------------
-  Function                       Description
   ------------------------------ ----------------------------------------
   `enrich_by_overlap`            Adds attributes from layer B to layer A
                                  based on spatial overlap.
@@ -213,8 +209,6 @@ Each function solves one specific task in the form:
 
 ### **filter/**
 
-  -----------------------------------------------------------------------
-  Function                       Description
   ------------------------------ ----------------------------------------
   `filter_by_overlap`            Selects only elements of A that
                                  spatially overlap with layer B.
@@ -223,8 +217,6 @@ Each function solves one specific task in the form:
 
 ### **find/**
 
-  ---------------------------------------------------------------------------
-  Function                           Description
   ---------------------------------- ----------------------------------------
   `find_nearest_neighbors`           Finds the nearest objects from layer B
                                      for each element of layer A.
@@ -236,8 +228,6 @@ Each function solves one specific task in the form:
 
 ### **gen/**
 
-  ------------------------------------------------------------------------
-  Function                        Description
   ------------------------------- ----------------------------------------
   `generate_buffer`               Creates a buffer around points or
                                   polygons.
