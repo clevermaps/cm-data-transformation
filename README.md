@@ -56,13 +56,17 @@ from cm_data_transformation.operations import Operations
 # Initialize the operations engine
 ops = Operations("duckdb:///data/data.duckdb")
 
-# Count of POI around stops
+@flow(name='Stops flow')
+def sample_flow():
+  # Count of POI around stops
   ops.agg.aggregate_within_buffer(
       left_source={"table": "gtfs_stg.stops", "geometry": "geom"},
       right_source={"table": "ovm_stg.places_place", "geometry": "geom", "id": "id"},
       target={"table": "app.gtfs__stops_agg_buffer"},
       options={"buffer_size": 300, "agg": "count(id) AS poi_count"}
   )
+
+sample_flow()
 
 ```
 
@@ -88,3 +92,5 @@ ops = Operations("duckdb:///data/data.duckdb")
     ├── gen/         # Generating new spatial objects
     ├── analyze/     # Advanced analyses and metrics
     └── utils/       # Helper functions
+
+[Functions details](docs/operations_docs.md)
