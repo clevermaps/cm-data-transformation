@@ -1,1 +1,0 @@
-create or replace table stg.test as select 1;

@@ -1,17 +1,25 @@
-CREATE OR REPLACE TABLE {{ to.table }} AS
+CREATE OR REPLACE TABLE {{ target.table }} AS
 SELECT
     a.*,
-    {{ func.options.agg }}
-FROM {{ from.table }} AS a
-LEFT JOIN {{ with.table }} AS b
+    {{ options.agg }}
+FROM {{ left_source.table }} AS a
+LEFT JOIN 
+(
+    select
+        *
+    from {{ right_source.table }}
+    {% if right_source.where is not none %}
+    WHERE {{ right_source.where }}
+    {% endif %}
+) AS b
 ON ST_Intersects(
     ST_Transform(
         ST_Buffer(
-            ST_Transform(a.{{ from.options.geometry }}, 'EPSG:4326', 'EPSG:3857'),
-            {{ func.options.buffer_size }}
+            ST_Transform(a.{{ left_source.geometry }}, 'EPSG:4326', 'EPSG:3857'),
+            {{ options.buffer_size }}
         ),
         'EPSG:3857', 'EPSG:4326'
     ), 
-    b.{{ with.options.geometry }}
+    b.{{ right_source.geometry }}
 )
 GROUP BY a.*

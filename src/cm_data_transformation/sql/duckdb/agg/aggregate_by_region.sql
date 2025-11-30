@@ -1,8 +1,16 @@
-CREATE OR REPLACE TABLE {{ to.table }} AS
+CREATE OR REPLACE TABLE {{ target.table }} AS
 SELECT
     a.*,
-    {{ func.options.agg }}
-FROM {{ from.table }} AS a
-LEFT JOIN {{ with.table }} AS b
-ON ST_Intersects(a.{{ from.options.geometry }}, b.{{ with.options.geometry }})
+    {{ options.agg }}
+FROM {{ left_source.table }} AS a
+LEFT JOIN 
+(
+    select
+        *
+    from {{ right_source.table }}
+    {% if right_source.where is not none %}
+    WHERE {{ right_source.where }}
+    {% endif %}
+) AS b
+ON ST_Intersects(a.{{ left_source.geometry }}, b.{{ right_source.geometry }})
 GROUP BY a.*

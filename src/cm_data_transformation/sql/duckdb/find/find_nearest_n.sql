@@ -1,31 +1,31 @@
 -- TODO optimize
-CREATE OR REPLACE TABLE {{ to.table }} AS
+CREATE OR REPLACE TABLE {{ target.table }} AS
 
 WITH pairs AS (
     SELECT
-        {{ from.options.table_alias }}.*,
-        {{ with.options.table_alias }}.{{ with.options.id }} AS pair_id,
+        {{ left_source.table_alias }}.*,
+        {{ right_source.table_alias }}.{{ right_source.id }} AS nearest_id,
         ST_Distance(
-            ST_Transform(a.{{ from.options.geometry }}, 'EPSG:4326', 'EPSG:3857'),
-            ST_Transform(b.{{ with.options.geometry }}, 'EPSG:4326', 'EPSG:3857')
-        ) AS pair_distance
-    FROM {{ from.table }} AS {{ from.options.table_alias }}
-    LEFT JOIN {{ with.table }} AS {{ with.options.table_alias }}
+            ST_Transform(a.{{ left_source.geometry }}, 'EPSG:4326', 'EPSG:3857'),
+            ST_Transform(b.{{ right_source.geometry }}, 'EPSG:4326', 'EPSG:3857')
+        ) AS nearest_distance
+    FROM {{ left_source.table }} AS {{ left_source.table_alias }}
+    LEFT JOIN {{ right_source.table }} AS {{ right_source.table_alias }}
     ON (
         ST_Intersects(
             ST_Transform(
                 ST_Buffer(
-                    ST_Transform(a.{{ from.options.geometry }}, 'EPSG:4326', 'EPSG:3857'),
-                    {{ func.options.max_distance }}
+                    ST_Transform(a.{{ left_source.geometry }}, 'EPSG:4326', 'EPSG:3857'),
+                    {{ options.max_distance }}
                 ),
                 'EPSG:3857',
                 'EPSG:4326'
             ),
-            b.{{ with.options.geometry }}
+            b.{{ right_source.geometry }}
         )
     )
-    {% if func.options.where_condition is defined %}
-        AND {{ func.options.where_condition }}
+    {% if right_source.where is not none %}
+        AND {{ right_source.where }}
     {% endif %}
 )
 SELECT
@@ -34,9 +34,9 @@ FROM (
     SELECT
         *,
         ROW_NUMBER() OVER (
-            PARTITION BY {{ from.options.id }}
-            ORDER BY pair_distance
+            PARTITION BY {{ left_source.id }}
+            ORDER BY nearest_distance
         ) AS rn
     FROM pairs
 ) ranked
-WHERE rn <= {{ func.options.max_neighbours }}
+WHERE rn <= {{ options.max_neighbours }}
