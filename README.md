@@ -50,18 +50,6 @@ with new functions and support for additional database systems.
 
 # Quick Start
 
-Below is a minimal set of examples showing how to run spatial operations
-using this framework.\
-You can choose between **imperative Python API** or **declarative YAML
-pipelines**.
-
-Both approaches rely on the same SQL + Jinja templates and produce
-identical results.
-
-------------------------------------------------------------------------
-
-## Using Python
-
 ``` python
 from cm_data_transformation.operations import Operations
 
