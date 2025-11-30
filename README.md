@@ -65,67 +65,17 @@ identical results.
 ``` python
 from cm_data_transformation.operations import Operations
 
-# 1. Initialize the operations engine
+# Initialize the operations engine
 ops = Operations("duckdb:///data/data.duckdb")
 
-# 2. Prepare parameters for the operation
-params = {
-    "from": {
-        "table": "gtfs_stg.stops"
-    },
-    "func": {
-        "name": "aggregate_within_buffer",
-        "options": {
-            "buffer_size": 500,
-            "agg": "count(id) AS poi_count"
-        }
-    },
-    "with": {
-        "table": "ovm_stg.places_place",
-        "options": {
-            "geometry": "geom",
-            "id": "id"
-        }
-    },
-    "to": {
-        "table": "app.stops_agg_buffer_poi"
-    }
-}
+# Count of POI around stops
+  ops.agg.aggregate_within_buffer(
+      left_source={"table": "gtfs_stg.stops", "geometry": "geom"},
+      right_source={"table": "ovm_stg.places_place", "geometry": "geom", "id": "id"},
+      target={"table": "app.gtfs__stops_agg_buffer"},
+      options={"buffer_size": 300, "agg": "count(id) AS poi_count"}
+  )
 
-# 3. Execute the operation
-ops.agg.aggregate_within_buffer(params)
-```
-
-------------------------------------------------------------------------
-
-## Using YAML
-
-``` yaml
-- step:
-      title: "Count of POI around stops"
-      from: 
-        table: gtfs_stg.stops
-        options:
-          geometry: geom
-      with:
-        table: ovm_stg.places_place
-        options:
-          geometry: geom
-          id: id
-      function:
-        type: aggregate_within_buffer
-        options:
-          buffer_size: 500
-          agg: "count(id) AS poi_count"
-      to:
-        table: app.stops_agg_buffer_poi
-```
-
-``` python
-from cm_data_transformation.runner import Runner
-
-runner = Runner("duckdb:///data/data.duckdb")
-runner.run_yaml("./pipelines/test.yaml")
 ```
 
 ------------------------------------------------------------------------
@@ -150,97 +100,3 @@ runner.run_yaml("./pipelines/test.yaml")
     ├── gen/         # Generating new spatial objects
     ├── analyze/     # Advanced analyses and metrics
     └── utils/       # Helper functions
-
-------------------------------------------------------------------------
-
-## Naming Conventions
-
-Each function solves one specific task in the form:
-
-    <action>_<context>
-
-  -----------------------------------------------------------------------
-  Prefix (action)                                 Meaning
-  ----------------------------------------------- -----------------------
-  `generate_`                                     creates new geometry or
-                                                  grid
-
-  `filter_by_`                                    selects a subset of
-                                                  data based on spatial
-                                                  relationships
-
-  `find_`                                         finds neighboring or
-                                                  nearest features
-
-  `enrich_by_`                                    adds attributes based
-                                                  on spatial
-                                                  relationships
-
-  `aggregate_`                                    summarizes or groups
-                                                  data by spatial units
-
-  `compute_`                                      (in analyze/) computes
-                                                  metrics or scores
-                                                
-  -----------------------------------------------------------------------
-
-------------------------------------------------------------------------
-
-## Overview of Existing Functions
-
-### **agg/**
-
-  ------------------------------- ----------------------------------------
-  `aggregate_by_region`           Aggregates values of layer B within
-                                  polygons of layer A (e.g., regions).
-
-  `aggregate_within_buffer`       Aggregates values within a buffer around
-                                  points or polygons.
-
-  ------------------------------------------------------------------------
-
-### **enrich/**
-
-  ------------------------------ ----------------------------------------
-  `enrich_by_overlap`            Adds attributes from layer B to layer A
-                                 based on spatial overlap.
-
-  -----------------------------------------------------------------------
-
-### **filter/**
-
-  ------------------------------ ----------------------------------------
-  `filter_by_overlap`            Selects only elements of A that
-                                 spatially overlap with layer B.
-
-  -----------------------------------------------------------------------
-
-### **find/**
-
-  ---------------------------------- ----------------------------------------
-  `find_nearest_neighbors`           Finds the nearest objects from layer B
-                                     for each element of layer A.
-
-  `find_nearest_neighbors_avg`       Same as above, but with averaging across
-                                     multiple neighbors.
-                                     
-  ---------------------------------------------------------------------------
-
-### **gen/**
-
-  ------------------------------- ----------------------------------------
-  `generate_buffer`               Creates a buffer around points or
-                                  polygons.
-
-  `generate_grid_h3`              Generates an H3 grid for a given
-                                  geometry.
-
-  `generate_grid_around_h3`       Generates H3 cells around a given H3
-                                  index (k‑ring).
-
-  `generate_grid_within_h3`       Generates H3 cells covering a given
-                                  polygon.
-                                  
-  ------------------------------------------------------------------------
-
-------------------------------------------------------------------------
