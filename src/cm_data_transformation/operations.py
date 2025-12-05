@@ -38,7 +38,7 @@ class Operations:
             self.parent.run_template_sql("agg/filter_by_overlap.sql", config)
 
         @task(cache_policy=None)
-        def filter_within_distance_from(self, left_source: dict, right_source: dict, target: dict, options: dict):
+        def filter_within_distance(self, left_source: dict, right_source: dict, target: dict, options: dict):
 
             config = {
                 'left_source': TableConfig(**left_source),
@@ -47,19 +47,7 @@ class Operations:
                 'options': FilterWithinDistanceOptions(**options)
             }
             
-            self.parent.run_template_sql("filter/filter_within_distance_from.sql", config)
-
-        @task(cache_policy=None)
-        def filter_within_distance_to(self, left_source: dict, right_source: dict, target: dict, options: dict):
-            
-            config = {
-                'left_source': TableConfig(**left_source),
-                'right_source': TableConfig(**right_source),
-                'target': TableConfig(**target),
-                'options': FilterWithinDistanceOptions(**options)
-            }
-            
-            self.parent.run_template_sql("filter/filter_within_distance_to.sql", config)
+            self.parent.run_template_sql("filter/filter_within_distance.sql", config)
 
     class Aggregate:
         def __init__(self, parent):

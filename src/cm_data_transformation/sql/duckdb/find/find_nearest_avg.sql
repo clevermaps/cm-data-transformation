@@ -3,14 +3,14 @@ CREATE OR REPLACE TABLE {{ target.table }} AS
 
 WITH pairs AS (
     SELECT
-        {{ left_source.table_alias }}.*,
-        {{ right_source.table_alias }}.{{ right_source.id }} AS pair_id,
+        a.*,
+        b.{{ right_source.id }} AS pair_id,
         ST_Distance(
             ST_Transform(a.{{ left_source.geometry }}, 'EPSG:4326', 'EPSG:3857'),
             ST_Transform(b.{{ right_source.geometry }}, 'EPSG:4326', 'EPSG:3857')
         ) AS pair_distance
-    FROM {{ left_source.table }} AS {{ left_source.table_alias }}
-    LEFT JOIN {{ right_source.table }} AS {{ right_source.table_alias }}
+    FROM {{ left_source.table }} AS a
+    LEFT JOIN {{ right_source.table }} AS b
     ON (
         ST_Intersects(
             ST_Transform(
@@ -29,9 +29,9 @@ WITH pairs AS (
     {% endif %}
 )
 SELECT
-    {{ left_source.table_alias }}.*,
+    a.*,
     avg(pair_distance) as avg_distance
-from {{ left_source.table }} AS {{ left_source.table_alias }}
+from {{ left_source.table }} AS a
 left join (
     SELECT
         *,
@@ -41,7 +41,7 @@ left join (
         ) AS rn
     FROM pairs
 ) ranked
-on {{ left_source.table_alias }}.{{ left_source.id }} = ranked.{{ left_source.id }}
+on a.{{ left_source.id }} = ranked.{{ left_source.id }}
 and rn <= {{ options.max_neighbours }}
 GROUP BY
-    {{ left_source.table_alias }}.*
+    a.*

@@ -1,5 +1,4 @@
 from prefect import flow
-
 from cm_data_transformation.operations import Operations
 
 operations = Operations("duckdb:///../data/data.duckdb")
@@ -44,7 +43,7 @@ def admin_flow():
     )
 
     #Population within stops
-    operations.filter.filter_within_distance_from(
+    operations.filter.filter_within_distance(
         left_source={"table": "worldpop_stg.population", "geometry": "geom"},
         right_source={"table": "gtfs_stg.stops", "geometry": "geom", "id": "stop_id"},
         target={"table": "app.pop_within_stops"},
@@ -86,7 +85,7 @@ def h3_flow():
     )
 
     # 4) Population within stops
-    operations.filter.filter_within_distance_from(
+    operations.filter.filter_within_distance(
         left_source={"table": "worldpop_stg.population", "geometry": "geom", "id": "id"},
         right_source={"table": "gtfs_stg.stops", "geometry": "geom", "id": "stop_id"},
         target={"table": "app.pop_within_stops"},

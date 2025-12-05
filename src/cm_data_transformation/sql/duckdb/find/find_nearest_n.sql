@@ -3,14 +3,14 @@ CREATE OR REPLACE TABLE {{ target.table }} AS
 
 WITH pairs AS (
     SELECT
-        {{ left_source.table_alias }}.*,
-        {{ right_source.table_alias }}.{{ right_source.id }} AS nearest_id,
+        a.*,
+        b.{{ right_source.id }} AS nearest_id,
         ST_Distance(
             ST_Transform(a.{{ left_source.geometry }}, 'EPSG:4326', 'EPSG:3857'),
             ST_Transform(b.{{ right_source.geometry }}, 'EPSG:4326', 'EPSG:3857')
         ) AS nearest_distance
-    FROM {{ left_source.table }} AS {{ left_source.table_alias }}
-    LEFT JOIN {{ right_source.table }} AS {{ right_source.table_alias }}
+    FROM {{ left_source.table }} AS a
+    LEFT JOIN {{ right_source.table }} AS b
     ON (
         ST_Intersects(
             ST_Transform(
