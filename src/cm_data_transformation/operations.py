@@ -161,7 +161,7 @@ class Operations:
         self.engine: Engine = create_engine(connection_string)
         
         if self.engine.name == "duckdb":
-            init_duckdb(self.engine, SQL_DIR)
+            init_duckdb(self.engine)
             self.sql_dir = SQL_DIR / "duckdb"
         else:
             raise ValueError('Unsupported DB engine {}'.format(self.engine.name))
