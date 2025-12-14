@@ -1,0 +1,10 @@
+name: 'cm_dbt_macros'
+version: '1.0.0'
+
+config-version: 2
+
+target-path: "target"
+clean-targets: ["target", "dbt_modules", "dbt_packages"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+log-path: "logs"
