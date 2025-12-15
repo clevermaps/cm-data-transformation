@@ -1,0 +1,186 @@
+version: 2
+
+macros:
+  - name: filter_by_distance
+    description: Filters the left source table by geometries within a specified distance from the right source table using spatial buffers.
+    arguments:
+      - name: left_source
+        type: source
+        description: The left source object containing table and geometry attributes.
+      - name: right_source
+        type: source
+        description: The right source object containing table and geometry attributes.
+      - name: options
+        type: object
+        description: Options object containing distance (buffer distance in meters).
+
+  - name: filter_by_overlap
+    description: Filters the left source table by geometries that spatially overlap with the right source table.
+    arguments:
+      - name: left_source
+        type: source
+        description: The left source object containing table and geometry attributes.
+      - name: right_source
+        type: source
+        description: The right source object containing table and geometry attributes.
+      - name: options
+        type: object
+        description: Options object (not explicitly used in this macro).
+
+  - name: enrich_by_nearest
+    description: Enriches the left source table by joining columns from the nearest record in the right source table within specified distance and neighbor limits.
+    arguments:
+      - name: left_source
+        type: source
+        description: The left source object containing table, id, and geometry attributes.
+      - name: right_source
+        type: source
+        description: The right source object containing table, id, geometry, and columns attributes.
+      - name: options
+        type: object
+        description: Options object containing max_neighbours and max_distance.
+
+  - name: aggregate_by_buffer
+    description: Aggregates data from the right source table within a buffer around the left source geometries using the specified aggregation expression.
+    arguments:
+      - name: left_source
+        type: source
+        description: The left source object containing table and geometry attributes.
+      - name: right_source
+        type: source
+        description: The right source object containing table, geometry, and optional where clause.
+      - name: options
+        type: object
+        description: Options object containing buffer_size and agg (aggregation expression).
+
+  - name: aggregate_by_grid_h3
+    description: (No implementation) Placeholder macro for aggregating data by H3 grid.
+    arguments:
+      - name: source
+        type: source
+        description: The source object.
+      - name: options
+        type: object
+        description: Options object.
+
+  - name: aggregate_by_region
+    description: Aggregates data from the right source table where geometries intersect with the left source geometries using the specified aggregation expression.
+    arguments:
+      - name: left_source
+        type: source
+        description: The left source object containing table and geometry attributes.
+      - name: right_source
+        type: source
+        description: The right source object containing table, geometry, and optional where clause.
+      - name: options
+        type: object
+        description: Options object containing agg (aggregation expression).
+
+  - name: aggregate_by_union
+    description: (No implementation) Placeholder macro for aggregating data by union.
+    arguments:
+      - name: source
+        type: source
+        description: The source object.
+      - name: options
+        type: object
+        description: Options object.
+
+  - name: cluster_by_distance
+    description: (No implementation) Placeholder macro for clustering data by distance.
+    arguments:
+      - name: source
+        type: source
+        description: The source object.
+      - name: options
+        type: object
+        description: Options object.
+
+  - name: enrich_by_overlap
+    description: Enriches the left source table by joining columns from the right source table where geometries overlap.
+    arguments:
+      - name: left_source
+        type: source
+        description: The left source object containing table and geometry attributes.
+      - name: right_source
+        type: source
+        description: The right source object containing table, geometry, and columns attributes.
+      - name: options
+        type: object
+        description: Options object (not explicitly used in this macro).
+
+  - name: find_nearest_avg
+    description: Finds the average distance to the nearest neighbors from the right source table within specified max distance and neighbor limits.
+    arguments:
+      - name: left_source
+        type: source
+        description: The left source object containing table, id, and geometry attributes.
+      - name: right_source
+        type: source
+        description: The right source object containing table, id, geometry, and optional where clause.
+      - name: options
+        type: object
+        description: Options object containing max_distance and max_neighbours.
+
+  - name: find_nearest_n
+    description: Finds the nearest n neighbors from the right source table within specified max distance and neighbor limits.
+    arguments:
+      - name: left_source
+        type: source
+        description: The left source object containing table, id, and geometry attributes.
+      - name: right_source
+        type: source
+        description: The right source object containing table, id, geometry, and optional where clause.
+      - name: options
+        type: object
+        description: Options object containing max_distance and max_neighbours.
+
+  - name: generate_buffer
+    description: Generates a buffer geometry column for the source table using the specified buffer size and column name.
+    arguments:
+      - name: source
+        type: source
+        description: The source object containing table and geometry attributes.
+      - name: options
+        type: object
+        description: Options object containing buffer_size and buffer_column.
+
+  - name: generate_grid_h3_poly
+    description: Generates H3 hexagon polygons for the source geometries at the specified H3 resolution.
+    arguments:
+      - name: source
+        type: source
+        description: The source object containing table, id, and geometry attributes.
+      - name: options
+        type: object
+        description: Options object containing h3_res.
+
+  - name: generate_grid_h3_ring
+    description: (No implementation) Placeholder macro for generating H3 grid rings.
+    arguments:
+      - name: source
+        type: source
+        description: The source object.
+      - name: options
+        type: object
+        description: Options object.
+
+  - name: generate_grid_h3
+    description: Generates H3 cell IDs for the source geometries at the specified H3 resolution.
+    arguments:
+      - name: source
+        type: source
+        description: The source object containing table and geometry attributes.
+      - name: options
+        type: object
+        description: Options object containing h3_res.
+
+  - name: generate_voronoi
+    description: (No implementation) Placeholder macro for generating Voronoi polygons.
+    arguments:
+      - name: source
+        type: source
+        description: The source object.
+      - name: options
+        type: object
+        description: Options object.
