@@ -1,0 +1,48 @@
+# models/data_tests/schema.yml
+version: 2
+
+models:
+  - name: test__agg_by_region
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 1
+  - name: test__agg_by_buffer
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 1
+  - name: test__find_nearest_n
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 1
+  - name: test__find_nearest_avg
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 1
+  - name: test__enrich_by_overlap
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 1
+  - name: test__enrich_by_nearest
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 1
+  - name: test__filter_by_overlap
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 1
+  - name: test__filter_by_distance
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 1
+  - name: test__gen_buffer
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 1
+  - name: test__gen_h3
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 1
+  - name: test__gen_h3_poly
+    data_tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 1

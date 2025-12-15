@@ -1,3 +1,5 @@
+{% macro filter_by_distance(left_source, right_source, options) %}
+
 WITH right_buffers AS (
     SELECT
         ST_Transform(
@@ -22,3 +24,5 @@ ON ST_Intersects(
     a.{{ left_source.geometry }},
     b.buffer
 )
+
+{% endmacro %}

@@ -2,9 +2,10 @@
 
 {% set enrich_options = options.copy() %}
 {% set _ = enrich_options.update({'max_neighbours': 1}) %}
+{% set _ = enrich_options.update({'max_distance': options.max_distance}) %}
 
 WITH nearest AS (
-    {{ find_nearest_n(left_source, right_source, enrich_options) }}
+    {{ cm_dbt_macros.find_nearest_n(left_source, right_source, enrich_options) }}
 )
 
 SELECT

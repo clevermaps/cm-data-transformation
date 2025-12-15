@@ -1,7 +1,5 @@
 # CleverMaps Transformations
 
-------------------------------------------------------------------------
-
 This repository contains a library of standard dbt macros providing high-level spatial tasks built on top of atomic ST_* functions.
 The goal is to simplify, speed up, and standardize the implementation of common spatial analytics across data pipelines.
 Instead of repeatedly writing low-level spatial SQL, the library offers reusable task-oriented macros that can be easily integrated into existing dbt-based transformation workflows.

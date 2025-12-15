@@ -1,0 +1,16 @@
+version: 2
+sources:
+- name: gtfs
+  schema: gtfs_stg
+  tables:
+  - name: stops
+  - name: stop_times
+  - name: trips
+- name: ovm
+  schema: ovm_stg
+  tables:
+  - name: places_place
+- name: geobnd
+  schema: geobnd_stg
+  tables:
+  - name: geoboundaries__adm4

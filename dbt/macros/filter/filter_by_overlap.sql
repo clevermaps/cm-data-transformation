@@ -8,4 +8,5 @@ ON ST_Intersects(a.{{ left_source.geometry }}, b.{{ right_source.geometry }})
 {% if right_source.where is not none %}
 AND {{ right_source.where }}
 {% endif %}
+
 {% endmacro %}

@@ -1,0 +1,7 @@
+packages:
+  - local: ../dbt
+  - package: metaplane/dbt_expectations
+    version: 0.10.9
+  - package: godatadriven/dbt_date
+    version: 0.15.0
+sha1_hash: 8edfd93aa1bf73aa72ca735d71a4ff7686e32978

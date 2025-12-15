@@ -1,0 +1,15 @@
+cm_dbt_macros_test:
+  outputs:
+    dev:
+      type: duckdb
+      path: ./data/data.duckdb
+      extensions:
+        - httpfs
+        - spatial
+        - name: h3
+          repo: community
+      settings:
+        memory_limit: "4GB"
+        threads: 1
+
+  target: dev
