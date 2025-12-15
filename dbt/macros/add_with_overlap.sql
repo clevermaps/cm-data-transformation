@@ -1,5 +1,5 @@
 -- ⚠️ GENERATED FILE – DO NOT EDIT
--- Source: duckdb/add/add_with_overlap.sql
+-- Source: ../src/cm_data_transformation/sql/duckdb/add/add_with_overlap.sql
 -- Generated from Jinja DSL templates.
 -- Any manual changes will be overwritten.
 
