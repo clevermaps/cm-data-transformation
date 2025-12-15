@@ -1,1 +1,0 @@
-select count(1) from gtfs_stg.stops;
