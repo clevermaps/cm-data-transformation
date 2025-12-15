@@ -31,7 +31,7 @@ WITH pairs AS (
             b.{{ right_source.geometry }}
         )
     )
-    {% if right_source.where is not none %}
+    {% if right_source.where is defined %}
         AND {{ right_source.where }}
     {% endif %}
 )

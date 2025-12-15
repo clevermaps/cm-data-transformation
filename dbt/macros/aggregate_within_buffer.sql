@@ -16,7 +16,7 @@ LEFT JOIN
     select
         *
     from {{ right_source.table }}
-    {% if right_source.where is not none %}
+    {% if right_source.where is defined %}
     WHERE {{ right_source.where }}
     {% endif %}
 ) AS b
