@@ -1,0 +1,40 @@
+-- ⚠️ GENERATED FILE – DO NOT EDIT
+-- Source: ../src/cm_data_transformation/sql/duckdb/filter/filter_within_distance.sql
+-- Generated from Jinja DSL templates.
+-- Any manual changes will be overwritten.
+
+
+{% macro filter_within_distance(left_source, right_source, options) %}
+-- args: left_source, right_source, options
+
+SELECT
+    *,
+    ST_Transform(
+        ST_Buffer(
+            ST_Transform({{ right_source.geometry }}, 'EPSG:4326', 'EPSG:3857'),
+            {{ options.distance }}
+        ),
+        'EPSG:3857', 'EPSG:4326'
+    ) as buffer
+from {{ right_source.table }}
+{% if right_source.where is not none %}
+WHERE {{ right_source.where }}
+{% endif %};
+
+CREATE INDEX tmp_left_source_idx ON {{ right_source.table }}_tmp USING RTREE (buffer);
+
+select
+    *
+from {{ left_source.table }};
+
+CREATE INDEX tmp_right_source_idx ON {{ left_source.table }}_tmp USING RTREE ({{ left_source.geometry }});
+
+SELECT DISTINCT
+    a.*
+from {{ left_source.table }}_tmp AS a
+JOIN {{ right_source.table }}_tmp AS b
+ON ST_Intersects(
+    a.{{ left_source.geometry }},
+    b.buffer
+);
+{% endmacro %}
