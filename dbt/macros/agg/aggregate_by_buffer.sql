@@ -1,29 +1,31 @@
 
-{% macro aggregate_by_buffer(left_source, right_source, options) %}
+{% macro aggregate_by_buffer(from, by, options) %}
+
+{% set aggregations = options.aggregations %}
 
 SELECT
-    a.*,
-    {{ options.agg }}
-FROM {{ left_source.table }} AS a
-LEFT JOIN
-(
-    select
-        *
-    from {{ right_source.table }}
-    {% if right_source.where is defined %}
-    WHERE {{ right_source.where }}
-    {% endif %}
-) AS b
+    a.*
+    
+    {%- for agg in aggregations %}
+    , {{ agg.function }}(b.{{ agg.column }}) AS {{ agg.result }}
+    {%- endfor %}
+
+FROM {{ by.table }} AS a
+LEFT JOIN {{ from.table }} AS b
 ON ST_Intersects(
     ST_Transform(
         ST_Buffer(
-            ST_Transform(a.{{ left_source.geometry }}, 'EPSG:4326', 'EPSG:3857'),
-            {{ options.buffer_size }}
+            ST_Transform(a.{{ by.geometry }}, 'EPSG:4326', 'EPSG:3857'),
+            {{ by.buffer_size }}
         ),
         'EPSG:3857', 'EPSG:4326'
     ),
-    b.{{ right_source.geometry }}
+    b.{{ by.geometry }}
 )
+{% if from.where is defined %}
+WHERE {{ from.where }}
+{% endif %}
+
 GROUP BY a.*
 
 {% endmacro %}

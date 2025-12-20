@@ -1,10 +1,10 @@
 
 {{ cm_dbt_macros.filter_by_distance(
-    left_source={
+    from={
       "table": ref('stg__places'),
       "geometry": "geom"
     },
-    right_source={
+    by={
       "table": ref('stg__stops'),
       "geometry": "geom"
     },

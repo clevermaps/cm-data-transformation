@@ -1,12 +1,12 @@
-{% macro filter_by_overlap(left_source, right_source, options) %}
+{% macro filter_by_overlap(from, by, options) %}
 
 SELECT
     a.*
-FROM {{ left_source.table }} AS a
-JOIN {{ right_source.table }} AS b
-ON ST_Intersects(a.{{ left_source.geometry }}, b.{{ right_source.geometry }})
-{% if right_source.where is defined %}
-AND {{ right_source.where }}
+FROM {{ from.table }} AS a
+JOIN {{ by.table }} AS b
+ON ST_Intersects(a.{{ from.geometry }}, b.{{ by.geometry }})
+{% if by.where is defined %}
+AND {{ by.where }}
 {% endif %}
 
 {% endmacro %}

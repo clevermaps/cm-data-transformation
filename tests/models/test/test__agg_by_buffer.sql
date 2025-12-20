@@ -1,15 +1,21 @@
 
 {{ cm_dbt_macros.aggregate_by_buffer(
-    left_source={
+    from={
       "table": ref('stg__places'),
       "geometry": "geom"
     },
-    right_source={
+    by={
       "table": ref('stg__places'),
-      "geometry": "geom"
+      "geometry": "geom",
+      "buffer_size": 500
     },
     options={
-      "buffer_size": 500,
-      "agg": "count(b.id) as place_count"
+      "aggregations": [
+        {
+          "function": "count",
+          "column": "id",
+          "result": "place_count"
+        }
+      ]
     }
 ) }}

@@ -25,34 +25,41 @@ This document provides descriptions and usage examples for the DBT macros availa
 ## aggregate_by_buffer
 
 **Description:**  
-Aggregates data from the right source table joined to the left source table where the left geometries intersect with a buffer around the left geometries. The aggregation expression is specified in options.
+Aggregates data from `from` table by the geometries from the `by` point or line table with dynamically computed buffer. The aggregation expression is specified in options.
 
 **Parameters:**  
-- `left_source`: Object containing:
-  - `table`: The left source table reference.
-  - `geometry`: The geometry column name in the left source table.  
-- `right_source`: Object containing:
-  - `table`: The right source table reference.
-  - `geometry`: The geometry column name in the right source table.
-  - `where` (optional): Additional filter condition for the right source table.  
-- `options`: Object containing:
+- `from`: Object containing:
+  - `table`: The name of the table.
+  - `geometry`: The geometry column name.  
+  - `where` (optional): Additional filter condition. 
+- `by`: Object containing:
+  - `table`: The name of the table.
+  - `geometry`: The geometry column name. 
   - `buffer_size`: The buffer size distance.
-  - `agg`: The aggregation SQL expression.
+- `options`: Object containing:
+  - `agg`: List of the aggregation objects.
 
 **Example usage:**
 ```sql
 {{ cm_dbt_macros.aggregate_by_buffer(
-    left_source={
+    from={
       "table": ref('stg__places'),
-      "geometry": "geom"
+      "geometry": "geom",
+      "where": "category = 'hospital'"
     },
-    right_source={
+    by={
       "table": ref('stg__places'),
       "geometry": "geom"
     },
     options={
       "buffer_size": 500,
-      "agg": "count(b.id) as place_count"
+      "agg": [
+        {
+          "function": "count",
+          "column": "id",
+          "result": "place_count"
+        }
+      ]
     }
 ) }}
 ```
@@ -62,78 +69,72 @@ Aggregates data from the right source table joined to the left source table wher
 ## aggregate_by_region
 
 **Description:**  
-Aggregates data from the right source table joined to the left source table where the geometries intersect. The aggregation expression is specified in options.
+Aggregates data from the `from` table by the geometries from the `by` polygon table where the geometries intersect. The aggregation expression is specified in options.
 
 **Parameters:**  
-- `left_source`: Object containing:
-  - `table`: The left source table reference.
-  - `geometry`: The geometry column name in the left source table.  
-- `right_source`: Object containing:
-  - `table`: The right source table reference.
-  - `geometry`: The geometry column name in the right source table.
-  - `where` (optional): Additional filter condition for the right source table.  
+- `from`: Object containing:
+  - `table`: The name of the table.
+  - `geometry`: The geometry column name.
+  - `where` (optional): Additional filter condition.    
+- `by`: Object containing:
+  - `table`: The name of the table.
+  - `geometry`: The geometry column name.
 - `options`: Object containing:
-  - `agg`: The aggregation SQL expression.
+  - `agg`: List of the aggregation objects.
 
 **Example usage:**
 ```sql
 {{ cm_dbt_macros.aggregate_by_region(
-    left_source={
+    from={
+      "table": ref('stg__places'),
+      "geometry": "geom",
+      "where": "category = 'hospital'"
+    },
+    by={
       "table": ref('stg__geoboundaries'),
       "geometry": "geom"
     },
-    right_source={
-      "table": ref('stg__places'),
-      "geometry": "geom"
-    },
     options={
-      "agg": "count(b.id) as place_count"
+      "agg": [
+        {
+          "function": "count",
+          "column": "id",
+          "result": "place_count"
+        }
+      ]
     }
 ) }}
 ```
 
 ---
 
-## aggregate_by_union
-
-**Description:**  
-*No implementation available.*
-
-**Parameters:**  
-- `source`: Object (not specified).  
-- `options`: Object (not specified).
-
-**Example usage:**  
-*No example available.*
-
----
 
 ## enrich_by_overlap
 
 **Description:**
-Enriches the left source table by joining columns from right source with those geometries that spatially intersect.
+Enriches the `from` table by joining columns with `by` table with those geometries that spatially intersect.
 
 **Parameters:**  
-- `left_source`: Object containing:
-  - `table`: The left source table reference.
-  - `geometry`: The geometry column name in the left source table.
-  - `id`: The ID column name in the left source table.  
-- `right_source`: Object containing:
-  - `table`: The right source table reference.
-  - `geometry`: The geometry column name in the right source table.
-  - `id`: The ID column name in the right source table.
-  - `columns`: A mapping of right source columns to output column names.  
+- `from`: Object containing:
+  - `table`: The name of the table.
+  - `geometry`: The geometry column name.
+  - `id`: The ID column name.  
+- `by`: Object containing:
+  - `table`: The name of the table..
+  - `geometry`: The geometry column name.
+  - `id`: The ID column name.
+  - `columns`: A mapping of by table columns to output column names.  
 - `options`: Object (currently unused)
 
 **Example usage:**
 ```sql
 {{ cm_dbt_macros.enrich_by_nearest(
-    left_source={
+    from={
       "table": ref('stg__stops'),
       "geometry": "geom",
       "id": "stop_id"
     },
-    right_source={
+    by={
       "table": ref('stg__places'),
       "geometry": "geom",
       "id": "id",
@@ -148,30 +149,30 @@ Enriches the left source table by joining columns from right source with those g
 ## enrich_by_nearest
 
 **Description:**  
-Enriches the left source table by joining columns from the nearest matching row in the right source table, within a maximum distance. Uses the `find_nearest_n` macro internally with `max_neighbours` set to 1.
+Enriches the from the `from` table by joining columns with the `by` table with the nearest matching feature, within a maximum distance. Uses the `find_nearest_n` macro internally with `max_neighbours` set to 1.
 
 **Parameters:**  
-- `left_source`: Object containing:
-  - `table`: The left source table reference.
-  - `geometry`: The geometry column name in the left source table.
-  - `id`: The ID column name in the left source table.  
-- `right_source`: Object containing:
-  - `table`: The right source table reference.
-  - `geometry`: The geometry column name in the right source table.
-  - `id`: The ID column name in the right source table.
-  - `columns`: A mapping of right source columns to output column names.  
+- `from`: Object containing:
+  - `table`: The name of the table..
+  - `geometry`: The geometry column name.
+  - `id`: The ID column name.  
+- `by`: Object containing:
+  - `table`: The name of the table..
+  - `geometry`: The geometry column name.
+  - `id`: The ID column name.
+  - `columns`: A mapping of by table columns to output column names.  
 - `options`: Object containing:
   - `max_distance`: Maximum distance to consider for nearest neighbor.
 
 **Example usage:**
 ```sql
 {{ cm_dbt_macros.enrich_by_nearest(
-    left_source={
+    from={
       "table": ref('stg__stops'),
       "geometry": "geom",
       "id": "stop_id"
     },
-    right_source={
+    by={
       "table": ref('stg__places'),
       "geometry": "geom",
       "id": "id",
@@ -188,27 +189,27 @@ Enriches the left source table by joining columns from the nearest matching row 
 ## filter_by_distance
 
 **Description:**  
-Filters rows from the left source table to those whose geometries intersect with a buffer around geometries from the right source table. The buffer size is specified in the options.
+Filters rows from the `from` table by the `by` table to those whose geometries intersect with a buffer around geometries. The buffer size is specified in the options.
 
 **Parameters:**  
-- `left_source`: Object containing:
-  - `table`: The left source table reference.
-  - `geometry`: The geometry column name in the left source table.  
-- `right_source`: Object containing:
-  - `table`: The right source table reference.
-  - `geometry`: The geometry column name in the right source table.
-  - `where` (optional): Additional filter condition for the right source table.  
+- `from`: Object containing:
+  - `table`: The name of the table..
+  - `geometry`: The geometry column name.  
+- `by`: Object containing:
+  - `table`: The name of the table..
+  - `geometry`: The geometry column name.
+  - `where` (optional): Additional filter condition.  
 - `options`: Object containing:
-  - `distance`: Buffer distance in the units of the coordinate system.
+  - `distance`: Buffer distance in meters.
 
 **Example usage:**
 ```sql
 {{ cm_dbt_macros.filter_by_distance(
-    left_source={
+    from={
       "table": ref('stg__places'),
       "geometry": "geom"
     },
-    right_source={
+    by={
       "table": ref('stg__stops'),
       "geometry": "geom"
     },
@@ -223,26 +224,26 @@ Filters rows from the left source table to those whose geometries intersect with
 ## filter_by_overlap
 
 **Description:**  
-Filters rows from the left source table to those whose geometries spatially intersect with geometries from the right source table. An optional filter can be applied to the right source table.
+Filters rows from the `from` table to those whose geometries spatially intersect with geometries of the `by` table. An optional filter can be applied to the right from table.
 
 **Parameters:**  
-- `left_source`: Object containing:
-  - `table`: The left source table reference.
-  - `geometry`: The geometry column name in the left source table.  
-- `right_source`: Object containing:
-  - `table`: The right source table reference.
-  - `geometry`: The geometry column name in the right source table.
-  - `where` (optional): Additional filter condition for the right source table.  
+- `from`: Object containing:
+  - `table`: The name of the table..
+  - `geometry`: The geometry column name.  
+- `by`: Object containing:
+  - `table`: The name of the table..
+  - `geometry`: The geometry column name.
+  - `where` (optional): Additional filter condition.  
 - `options`: Object (currently unused).
 
 **Example usage:**
 ```sql
 {{ cm_dbt_macros.filter_by_overlap(
-    left_source={
+    from={
       "table": ref('stg__places'),
       "geometry": "geom"
     },
-    right_source={
+    by={
       "table": ref('stg__geoboundaries'),
       "geometry": "geom",
       "where": "shape_name = 'Ivancice'"
@@ -258,18 +259,18 @@ Filters rows from the left source table to those whose geometries spatially inte
 ## find_nearest_avg
 
 **Description:**  
-Finds the average distance to the nearest neighbors from the right source table for each row in the left source table within a maximum distance and number of neighbors.
+Finds the nearest N neighbors from the `to` table for each row from from the `from` table within a maximum distance and computes average distance from N neighbors.
 
 **Parameters:**  
-- `left_source`: Object containing:
-  - `table`: The left source table reference.
-  - `geometry`: The geometry column name in the left source table.
-  - `id`: The ID column name in the left source table.  
-- `right_source`: Object containing:
-  - `table`: The right source table reference.
-  - `geometry`: The geometry column name in the right source table.
-  - `id`: The ID column name in the right source table.
-  - `where` (optional): Additional filter condition for the right source table.  
+- `from`: Object containing:
+  - `table`: The name of the table.
+  - `geometry`: The geometry column name.
+  - `id`: The ID column name.  
+- `to`: Object containing:
+  - `table`: The name of the table..
+  - `geometry`: The geometry column name.
+  - `id`: The ID column name.
+  - `where` (optional): Additional filter condition.  
 - `options`: Object containing:
   - `max_distance`: Maximum distance to consider.
   - `max_neighbours`: Maximum number of neighbors to consider.
@@ -277,12 +278,12 @@ Finds the average distance to the nearest neighbors from the right source table 
 **Example usage:**
 ```sql
 {{ cm_dbt_macros.find_nearest_avg(
-    left_source={
+    from={
       "table": ref('stg__places'),
       "geometry": "geom",
       "id": "id"
     },
-    right_source={
+    to={
       "table": ref('stg__stops'),
       "geometry": "geom",
       "id": "stop_id"
@@ -299,18 +300,18 @@ Finds the average distance to the nearest neighbors from the right source table 
 ## find_nearest_n
 
 **Description:**  
-Finds the nearest N neighbors from the right source table for each row in the left source table within a maximum distance.
+Finds the nearest N neighbors from the `to` table for each row from the `from` table within a maximum distance.
 
 **Parameters:**  
-- `left_source`: Object containing:
-  - `table`: The left source table reference.
-  - `geometry`: The geometry column name in the left source table.
-  - `id`: The ID column name in the left source table.  
-- `right_source`: Object containing:
-  - `table`: The right source table reference.
-  - `geometry`: The geometry column name in the right source table.
-  - `id`: The ID column name in the right source table.
-  - `where` (optional): Additional filter condition for the right source table.  
+- `from`: Object containing:
+  - `table`: The name of the table..
+  - `geometry`: The geometry column .
+  - `id`: The ID column name.  
+- `to`: Object containing:
+  - `table`: The name of the table..
+  - `geometry`: The geometry column name.
+  - `id`: The ID column name.
+  - `where` (optional): Additional filter condition.  
 - `options`: Object containing:
   - `max_distance`: Maximum distance to consider.
   - `max_neighbours`: Maximum number of neighbors to return.
@@ -318,12 +319,12 @@ Finds the nearest N neighbors from the right source table for each row in the le
 **Example usage:**
 ```sql
 {{ cm_dbt_macros.find_nearest_n(
-    left_source={
+    from={
       "table": ref('stg__places'),
       "geometry": "geom",
       "id": "id"
     },
-    right_source={
+    to={
       "table": ref('stg__stops'),
       "geometry": "geom",
       "id": "stop_id"
@@ -340,19 +341,20 @@ Finds the nearest N neighbors from the right source table for each row in the le
 ## generate_grid_h3_poly
 
 **Description:**  
-Generates H3 grid cells covering polygons from the source table at a specified H3 resolution. Returns the H3 cell ID, its WKT boundary, and geometry.
+Generates H3 grid cells covering polygons of the `from` polygon table at a specified H3 resolution. Returns the H3 cell ID, its WKT boundary, and geometry.
 
 **Parameters:**  
-- `source`: Object containing:
-  - `id`: The ID column name in the source table.
-  - `geometry`: The polygon geometry column name in the source table.  
+- `from`: Object containing:
+  - `table`: The name of the table.
+  - `id`: The ID column name in the from table.
+  - `geometry`: The polygon geometry column name.  
 - `options`: Object containing:
   - `h3_res`: The H3 resolution level.
 
 **Example usage:**
 ```sql
 {{ cm_dbt_macros.generate_grid_h3_poly(
-    source={
+    from={
       "table": "stg__geoboundaries", 
       "geometry": "geom", 
       "id": "shape_id"
@@ -368,19 +370,19 @@ Generates H3 grid cells covering polygons from the source table at a specified H
 ## generate_grid_h3
 
 **Description:**  
-Generates H3 grid cells for points from the source table at a specified H3 resolution. Returns the H3 cell ID for each point.
+Generates H3 grid cells for points of the `from` table at a specified H3 resolution. Returns the H3 cell ID for each point.
 
 **Parameters:**  
-- `source`: Object containing:
-  - `table`: The source table reference.
-  - `geometry`: The point geometry column name in the source table.  
+- `from`: Object containing:
+  - `table`: The name of the table.
+  - `geometry`: The point geometry column name.  
 - `options`: Object containing:
   - `h3_res`: The H3 resolution level.
 
 **Example usage:**
 ```sql
 {{ cm_dbt_macros.generate_grid_h3(
-    source={
+    from={
       "table": "stg__stops",
       "geometry": "geom"
     },
@@ -395,13 +397,13 @@ Generates H3 grid cells for points from the source table at a specified H3 resol
 ## generate_grid_h3_ring
 
 **Description:**  
-Generates a ring of H3 cells around each H3 cell generated by the `generate_grid_h3` macro at the specified H3 resolution and ring size.
+Generates a ring of H3 cells around each H3 cell from the `from` table at the specified H3 resolution and ring size.
 
 **Parameters:**  
-- `source`: Object containing:
-  - `table`: The source table reference.
-  - `geometry`: The point geometry column name in the source table.
-  - `id` (optional): The ID column name in the source table.  
+- `from`: Object containing:
+  - `table`: The name of the table..
+  - `geometry`: The point geometry column name.
+  - `id` (optional): The ID column name.  
 - `options`: Object containing:
   - `h3_res`: The H3 resolution level.
   - `h3_ring_size`: The size of the ring around each H3 cell.
@@ -409,7 +411,7 @@ Generates a ring of H3 cells around each H3 cell generated by the `generate_grid
 **Example usage:**
 ```sql
 {{ cm_dbt_macros.generate_grid_h3_ring(
-    source={
+    from={
       "table": "stg__stops",
       "geometry": "geom",
       "id": "shape_id"
@@ -426,18 +428,18 @@ Generates a ring of H3 cells around each H3 cell generated by the `generate_grid
 ## generate_voronoi
 
 **Description:**  
-Generates a Voronoi diagram from the union of geometries in the source table. Returns the Voronoi polygons as individual geometries.
+Generates a Voronoi diagram from the union of geometries in the `from` table. Returns the Voronoi polygons as individual geometries.
 
 **Parameters:**  
-- `source`: Object containing:
-  - `table`: The source table reference.
-  - `geometry`: The point geometry column name in the source table.  
+- `from`: Object containing:
+  - `table`: The name of the table..
+  - `geometry`: The point geometry column name.  
 - `options`: Object (currently unused).
 
 **Example usage:**
 ```sql
 {{ cm_dbt_macros.generate_voronoi(
-    source={
+    from={
       "table": "stg__stops",
       "geometry": "geom"
     },

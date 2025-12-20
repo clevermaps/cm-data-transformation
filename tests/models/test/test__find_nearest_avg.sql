@@ -1,11 +1,11 @@
 
 {{ cm_dbt_macros.find_nearest_avg(
-    left_source={
+    from={
       "table": ref('stg__places'),
       "geometry": "geom",
       "id": "id"
     },
-    right_source={
+    to={
       "table": ref('stg__stops'),
       "geometry": "geom",
       "id": "stop_id"

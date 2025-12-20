@@ -1,11 +1,11 @@
 
 {{ cm_dbt_macros.enrich_by_nearest(
-    left_source={
+    from={
       "table": ref('stg__stops'),
       "geometry": "geom",
       "id": "stop_id"
     },
-    right_source={
+    by={
       "table": ref('stg__places'),
       "geometry": "geom",
       "id": "id",

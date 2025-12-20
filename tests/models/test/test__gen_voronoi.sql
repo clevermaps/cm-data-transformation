@@ -1,6 +1,6 @@
 
 {{ cm_dbt_macros.generate_voronoi(
-    source={
+    from={
       "table": ref('stg__stops'),
       "geometry": "geom"
     },

@@ -1,14 +1,20 @@
 
 {{ cm_dbt_macros.aggregate_by_region(
-    left_source={
-      "table": ref('stg__geoboundaries'),
-      "geometry": "geom"
-    },
-    right_source={
+    from={
       "table": ref('stg__places'),
       "geometry": "geom"
     },
+    by={
+      "table": ref('stg__geoboundaries'),
+      "geometry": "geom"
+    },
     options={
-      "agg": "count(b.id) as place_count"
+      "aggregations": [
+        {
+          "function": "count",
+          "column": "id",
+          "result": "place_count"
+        }
+      ]
     }
 ) }}

@@ -1,19 +1,22 @@
 
-{% macro aggregate_by_region(left_source, right_source, options) %}
+{% macro aggregate_by_region(from, by, options) %}
+
+{% set aggregations = options.aggregations %}
 
 SELECT
-    a.*,
-    {{ options.agg }}
-FROM {{ left_source.table }} AS a
-LEFT JOIN
-(
-    select
-        *
-    from {{ right_source.table }}
-    {% if right_source.where is defined %}
-    WHERE {{ right_source.where }}
-    {% endif %}
-) AS b
-ON ST_Intersects(a.{{ left_source.geometry }}, b.{{ right_source.geometry }})
+    a.*
+    
+    {%- for agg in aggregations %}
+    , {{ agg.function }}(b.{{ agg.column }}) AS {{ agg.result }}
+    {%- endfor %}
+
+FROM {{ by.table }} AS a
+LEFT JOIN {{ from.table }} AS b
+ON ST_Intersects(a.{{ by.geometry }}, b.{{ from.geometry }})
+
+{% if from.where is defined %}
+WHERE {{ from.where }}
+{% endif %}
+
 GROUP BY a.*
 {% endmacro %}

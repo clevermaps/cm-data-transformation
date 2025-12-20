@@ -1,11 +1,11 @@
 
-{% macro generate_voronoi(source, options) %}
+{% macro generate_voronoi(from, options) %}
 
 with tmp_union as
 (
     SELECT
-        st_union_agg({{ source.geometry }}) as geom
-    from {{ source.table }}
+        st_union_agg({{ from.geometry }}) as geom
+    from {{ from.table }}
 ),
 tmp_voronoi as
 (

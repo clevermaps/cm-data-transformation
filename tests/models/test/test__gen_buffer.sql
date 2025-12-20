@@ -1,6 +1,6 @@
 
 {{ cm_dbt_macros.generate_buffer(
-    source={
+    from={
       "table": ref('stg__places'),
       "geometry": "geom"
     },

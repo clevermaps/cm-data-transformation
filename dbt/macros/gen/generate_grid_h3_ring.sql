@@ -1,9 +1,9 @@
 
-{% macro generate_grid_h3_ring(source, options) %}
+{% macro generate_grid_h3_ring(from, options) %}
 
 with tmp as
 (
-    {{ cm_dbt_macros.generate_grid_h3(source, options) }}
+    {{ cm_dbt_macros.generate_grid_h3(from, options) }}
 )
 SELECT
     *,

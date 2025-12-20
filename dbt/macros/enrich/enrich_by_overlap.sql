@@ -1,19 +1,19 @@
 
-{% macro enrich_by_overlap(left_source, right_source, options) %}
+{% macro enrich_by_overlap(from, by, options) %}
 
 SELECT
     a.*,
 
     {%- set b_cols = [] %}
-    {%- if right_source.columns %}
-        {%- for k, v in right_source.columns.items() %}
+    {%- if by.columns %}
+        {%- for k, v in by.columns.items() %}
             {%- set _ = b_cols.append('b.' ~ k ~ ' AS ' ~ v) %}
         {%- endfor %}
     {%- endif %}
 
     {{ b_cols | join(', ') }}
 
-FROM {{ left_source.table }} AS a
-LEFT JOIN {{ right_source.table }} AS b
-ON ST_Intersects(a.{{ left_source.geometry }}, b.{{ right_source.geometry }})
+FROM {{ from.table }} AS a
+LEFT JOIN {{ by.table }} AS b
+ON ST_Intersects(a.{{ from.geometry }}, b.{{ by.geometry }})
 {% endmacro %}
