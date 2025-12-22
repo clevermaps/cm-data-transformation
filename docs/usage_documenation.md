@@ -37,7 +37,7 @@ Aggregates data from `from` table by the geometries from the `by` point or line 
   - `geometry`: The geometry column name. 
   - `buffer_size`: The buffer size distance.
 - `options`: Object containing:
-  - `agg`: List of the aggregation objects.
+  - `aggregations`: List of the aggregation objects.
 
 **Example usage:**
 ```sql
@@ -49,11 +49,11 @@ Aggregates data from `from` table by the geometries from the `by` point or line 
     },
     by={
       "table": ref('stg__places'),
-      "geometry": "geom"
+      "geometry": "geom",
+      "buffer_size": 500
     },
     options={
-      "buffer_size": 500,
-      "agg": [
+      "aggregations": [
         {
           "function": "count",
           "column": "id",
@@ -80,7 +80,7 @@ Aggregates data from the `from` table by the geometries from the `by` polygon ta
   - `table`: The name of the table.
   - `geometry`: The geometry column name.
 - `options`: Object containing:
-  - `agg`: List of the aggregation objects.
+  - `aggregations`: List of the aggregation objects.
 
 **Example usage:**
 ```sql
@@ -95,7 +95,7 @@ Aggregates data from the `from` table by the geometries from the `by` polygon ta
       "geometry": "geom"
     },
     options={
-      "agg": [
+      "aggregations": [
         {
           "function": "count",
           "column": "id",
